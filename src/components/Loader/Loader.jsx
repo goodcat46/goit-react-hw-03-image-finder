@@ -12,8 +12,8 @@ const Loader = props => {
         radius="9"
         color="green"
         ariaLabel="oval"
-        wrapperStyle
-        wrapperClass
+        // wrapperStyle
+        // wrapperClass
       />
     </div>
   );
