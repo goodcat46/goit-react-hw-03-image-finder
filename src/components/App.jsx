@@ -13,9 +13,9 @@ const pixabayApi = new PixabayApi();
 
 export class App extends Component {
   state = {
-    loader: false,
+    isLoader: false,
     isOpenModal: false,
-    isLoadMoreBtn: true,
+    isLoadMoreBtn: false,
     searchQuery: '',
     loadedData: [],
     totalHits: null,
@@ -32,8 +32,7 @@ export class App extends Component {
     pixabayApi.searchQuery = this.state.searchQuery.trim();
     //* скидую лічильник
     pixabayApi.page = 1;
-    //* ховаю кнопку
-    // this.setState({ isLoadMoreBtn: true });
+
     // * Якщо відправляться пусте поле запит не відбудеться
     if (this.state.searchQuery.trim() === '') {
       Notiflix.Notify.info('Please type your query');
@@ -42,9 +41,20 @@ export class App extends Component {
     // *Варіант через async/await
     try {
       const { data } = await pixabayApi.fetchPhotosByQuery();
-      this.setState({ isLoadMoreBtn: false, loadedData: data.hits });
+      this.setState({
+        isLoader: true,
+        isLoadMoreBtn: true,
+        loadedData: data.hits,
+      });
       console.log(data);
 
+      if (data.totalHits === 0) {
+        this.setState({ isLoadMoreBtn: false });
+        Notiflix.Notify.failure(
+          'Sorry, there are no images matching your search query. Please try again.'
+        );
+        return;
+      }
       if (pixabayApi.page >= data.totalHits / pixabayApi.per_page + 1) {
         //* ховаю кнопку
         this.setState({ isLoadMoreBtn: false });
@@ -56,20 +66,12 @@ export class App extends Component {
         return;
       }
       if (pixabayApi.page >= data.totalHits / pixabayApi.per_page) {
-        // Якщо ТІЛЬКИ одна сторінка то тільки відмальовуємо, (is-hidden не знімаємо)
-        // galleryEl.innerHTML = makeGalleryCards(data.hits);
+        // Якщо ТІЛЬКИ одна сторінка то тільки відмальовуємо
+        this.setState({ isLoadMoreBtn: false });
         Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
         return;
       }
-      if (data.totalHits === 0) {
-        //* очищаю галрею
-        // galleryEl.innerHTML = '';
-        //* виводжу повідомлення про невдачу
-        Notiflix.Notify.failure(
-          'Sorry, there are no images matching your search query. Please try again.'
-        );
-        return;
-      }
+
       //* малюю галерею
       // galleryEl.innerHTML = makeGalleryCards(data.hits);
       //* показую кнопку
@@ -80,6 +82,8 @@ export class App extends Component {
     } catch (err) {
       // помилка піде у лог
       console.log(err);
+    } finally {
+      this.setState({ isLoader: false });
     }
   };
   onLoadMoreBtnClick = async event => {
@@ -91,25 +95,32 @@ export class App extends Component {
 
       console.log(data);
 
+      //* показую лоадер
+      this.setState(prevState => ({
+        isLoader: true,
+        isLoadMoreBtn: true,
+        loadedData: [...prevState.loadedData, ...data.hits],
+      }));
+
       if (pixabayApi.page >= data.totalHits / pixabayApi.per_page + 1) {
-        // loadMoreBtnEl.classList.add('is-hidden');
-        // loadMoreBtnEl.removeEventListener('click', onLoadMoreBtnElClick);
+        this.setState({ isLoadMoreBtn: false });
         Notiflix.Notify.info(
           "We're sorry, but you've reached the end of search results."
         );
       }
-      // galleryEl.insertAdjacentHTML('beforeend', makeGalleryCards(data.hits));
     } catch (err) {
       console.log(err);
+    } finally {
+      this.setState({ isLoader: false });
     }
   };
   handleToggleModal = el => {
-    let {isOpenModal } = this.state;
-    this.setState({ isOpenModal: !isOpenModal, currentImgUrl: el});
+    let { isOpenModal } = this.state;
+    this.setState({ isOpenModal: !isOpenModal, currentImgUrl: el });
   };
   componentDidMount() {}
   render() {
-    const {currentImgUrl, loadedData } = this.state;
+    const { currentImgUrl, loadedData } = this.state;
     return (
       <div className={css.App}>
         <Searchbar
@@ -123,12 +134,15 @@ export class App extends Component {
           />
         )}
 
-        {this.state.loader && <Loader />}
+        {this.state.isLoader && <Loader />}
         {this.state.isLoadMoreBtn && (
           <Button onLoadMoreBtnClick={this.onLoadMoreBtnClick} />
         )}
         {this.state.isOpenModal && (
-          <Modal currentImgUrl={currentImgUrl} onToggleModal={this.handleToggleModal} />
+          <Modal
+            currentImgUrl={currentImgUrl}
+            onToggleModal={this.handleToggleModal}
+          />
         )}
       </div>
     );
