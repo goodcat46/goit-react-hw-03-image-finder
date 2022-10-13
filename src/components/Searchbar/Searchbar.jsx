@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import css from './serchbar.module.css';
-const Searchbar = ({onSearchFormSubmit,onSearchInputChange}) => {
+const Searchbar = ({ onSearchFormSubmit, onSearchInputChange }) => {
   return (
     <header className={css.Searchbar}>
       <form className={css.SearchForm} onSubmit={onSearchFormSubmit}>
@@ -15,7 +15,7 @@ const Searchbar = ({onSearchFormSubmit,onSearchInputChange}) => {
           autoComplete="off"
           autoFocus
           placeholder="Search images and photos"
-          required
+          // required
           onChange={onSearchInputChange}
         />
       </form>
@@ -23,6 +23,9 @@ const Searchbar = ({onSearchFormSubmit,onSearchInputChange}) => {
   );
 };
 
-Searchbar.propTypes = {};
+Searchbar.propTypes = {
+  onSearchFormSubmit: PropTypes.func,
+  onSearchInputChange: PropTypes.func,
+};
 
 export default Searchbar;

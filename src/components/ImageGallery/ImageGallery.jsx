@@ -1,17 +1,25 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ImageGalleryItem from 'components/ImageGalleryItem/ImageGalleryItem';
-import css from './imageGallery.module.css'
+import css from './imageGallery.module.css';
 
-const ImageGallery = props => {
+const ImageGallery = ({ onToggleModal, loadedData }) => {
   return (
     <ul className={css.ImageGallery}>
-      <ImageGalleryItem />
-
+      {loadedData.map(el => (
+        <ImageGalleryItem
+          key={el.id}
+          imgUrl={el.webformatURL}
+          onToggleModal={onToggleModal}
+        />
+      ))}
     </ul>
   );
 };
 
-ImageGallery.propTypes = {};
+ImageGallery.propTypes = {
+  onToggleModal: PropTypes.func,
+  loadedData: PropTypes.array,
+};
 
 export default ImageGallery;

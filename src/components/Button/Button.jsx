@@ -1,13 +1,21 @@
-import React from 'react'
-import PropTypes from 'prop-types'
-import css from './button.module.css'
+import React from 'react';
+import PropTypes from 'prop-types';
+import css from './button.module.css';
 
-const Button = props => {
+const Button = ({ onLoadMoreBtnClick }) => {
   return (
-    <button className={css.Button} type='button'>Load more</button>
-  )
-}
+    <button
+      className={css.Button}
+      onClick={() => {
+        onLoadMoreBtnClick();
+      }}
+      type="button"
+    >
+      Load more
+    </button>
+  );
+};
 
-Button.propTypes = {}
+Button.propTypes = { onLoadMoreBtnClick: PropTypes.func };
 
-export default Button
+export default Button;

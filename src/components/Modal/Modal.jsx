@@ -2,17 +2,27 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import css from './modal.module.css';
 
-const Modal = props => {
+const Modal = ({ currentImgUrl, onToggleModal }) => {
   return (
     <div className={css.Overlay}>
       <div className={css.Modal}>
-        <img src="" alt="" />
+        <img src={currentImgUrl} alt="img_" />
       </div>
-      <button className={css.closeModal}>Close</button>
+      <button
+        className={css.closeModal}
+        onClick={() => {
+          onToggleModal();
+        }}
+      >
+        Close
+      </button>
     </div>
   );
 };
 
-Modal.propTypes = {};
+Modal.propTypes = {
+  currentImgUrl: PropTypes.string,
+  onToggleModal: PropTypes.func,
+};
 
 export default Modal;

@@ -1,5 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import { Oval } from 'react-loader-spinner';
 // import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 
@@ -19,6 +19,6 @@ const Loader = props => {
   );
 };
 
-Loader.propTypes = {};
+// Loader.propTypes = {};
 
 export default Loader;

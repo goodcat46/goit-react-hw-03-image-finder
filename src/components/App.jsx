@@ -11,36 +11,43 @@ import css from './app.module.css';
 const pixabayApi = new PixabayApi();
 // console.log(pixabayApi);
 
-
 export class App extends Component {
   state = {
-    loader: true,
+    loader: false,
     isOpenModal: false,
     isLoadMoreBtn: true,
     searchQuery: '',
+    loadedData: [],
+    totalHits: null,
     status: 'Indeal',
+    currentImgUrl: '',
   };
   onSearchInputChange = event => {
     let { target } = event;
-    this.setState({ searchQuery: target.value });
+    this.setState({ searchQuery: target.value.trim() });
   };
   onSearchFormSubmit = async event => {
     event.preventDefault();
     //* зчитую інпут
-    pixabayApi.searchQuery = this.state.searchQuery;
+    pixabayApi.searchQuery = this.state.searchQuery.trim();
     //* скидую лічильник
     pixabayApi.page = 1;
     //* ховаю кнопку
-    // loadMoreBtnEl.classList.add('is-hidden');
-
+    // this.setState({ isLoadMoreBtn: true });
+    // * Якщо відправляться пусте поле запит не відбудеться
+    if (this.state.searchQuery.trim() === '') {
+      Notiflix.Notify.info('Please type your query');
+      return;
+    }
     // *Варіант через async/await
     try {
       const { data } = await pixabayApi.fetchPhotosByQuery();
+      this.setState({ isLoadMoreBtn: false, loadedData: data.hits });
       console.log(data);
 
       if (pixabayApi.page >= data.totalHits / pixabayApi.per_page + 1) {
-        //* очищаю галрею
-        // galleryEl.innerHTML = '';
+        //* ховаю кнопку
+        this.setState({ isLoadMoreBtn: false });
         //* виводжу повідомлення про кінець запитів
         Notiflix.Notify.info(
           "We're sorry, but you've reached the end of search results."
@@ -75,15 +82,15 @@ export class App extends Component {
       console.log(err);
     }
   };
-  onLoadMoreBtnElClick = async event => {
+  onLoadMoreBtnClick = async event => {
     // Варіант через async/await
     try {
       pixabayApi.page += 1;
-  
+
       const { data } = await pixabayApi.fetchPhotosByQuery();
-  
+
       console.log(data);
-  
+
       if (pixabayApi.page >= data.totalHits / pixabayApi.per_page + 1) {
         // loadMoreBtnEl.classList.add('is-hidden');
         // loadMoreBtnEl.removeEventListener('click', onLoadMoreBtnElClick);
@@ -96,17 +103,33 @@ export class App extends Component {
       console.log(err);
     }
   };
+  handleToggleModal = el => {
+    let {isOpenModal } = this.state;
+    this.setState({ isOpenModal: !isOpenModal, currentImgUrl: el});
+  };
+  componentDidMount() {}
   render() {
+    const {currentImgUrl, loadedData } = this.state;
     return (
       <div className={css.App}>
         <Searchbar
           onSearchFormSubmit={this.onSearchFormSubmit}
           onSearchInputChange={this.onSearchInputChange}
         />
-        <ImageGallery />
+        {loadedData.length !== 0 && (
+          <ImageGallery
+            loadedData={loadedData}
+            onToggleModal={this.handleToggleModal}
+          />
+        )}
+
         {this.state.loader && <Loader />}
-        {this.state.isLoadMoreBtn && <Button />}
-        {this.state.isOpenModal && <Modal />}
+        {this.state.isLoadMoreBtn && (
+          <Button onLoadMoreBtnClick={this.onLoadMoreBtnClick} />
+        )}
+        {this.state.isOpenModal && (
+          <Modal currentImgUrl={currentImgUrl} onToggleModal={this.handleToggleModal} />
+        )}
       </div>
     );
   }
