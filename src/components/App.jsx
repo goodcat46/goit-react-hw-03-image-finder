@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
-import { PixabayApi } from './services/fetchAPI';
 import Notiflix from 'notiflix';
+
+import { PixabayApi } from '../api/fetchAPI';
+
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Loader from './Loader/Loader';
 import Button from './Button/Button';
 import Modal from './Modal/Modal';
+
 import css from './app.module.css';
 
 const pixabayApi = new PixabayApi();
-// console.log(pixabayApi);
 
 export class App extends Component {
   state = {
@@ -19,7 +21,6 @@ export class App extends Component {
     searchQuery: '',
     loadedData: [],
     totalHits: null,
-    status: 'Indeal',
     currentImgUrl: '',
   };
   onSearchInputChange = event => {
@@ -66,28 +67,21 @@ export class App extends Component {
         return;
       }
       if (pixabayApi.page >= data.totalHits / pixabayApi.per_page) {
-        // Якщо ТІЛЬКИ одна сторінка то тільки відмальовуємо
+        // *Якщо ТІЛЬКИ одна сторінка то тільки відмальовуємо
         this.setState({ isLoadMoreBtn: false });
         Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
         return;
       }
-
-      //* малюю галерею
-      // galleryEl.innerHTML = makeGalleryCards(data.hits);
-      //* показую кнопку
-      // loadMoreBtnEl.classList.remove('is-hidden');
-      //* додаю слухач подій на кнопку
-      // loadMoreBtnEl.addEventListener('click', onLoadMoreBtnElClick);
       Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
     } catch (err) {
-      // помилка піде у лог
+      //* помилка піде у лог
       console.log(err);
     } finally {
       this.setState({ isLoader: false });
     }
   };
   onLoadMoreBtnClick = async event => {
-    // Варіант через async/await
+    //* Варіант через async/await
     try {
       pixabayApi.page += 1;
 
@@ -118,9 +112,22 @@ export class App extends Component {
     let { isOpenModal } = this.state;
     this.setState({ isOpenModal: !isOpenModal, currentImgUrl: el });
   };
-  componentDidMount() {}
+  handleToggleModalOverlay = evt => {
+    let { target, currentTarget } = evt;
+    if (target === currentTarget) {
+      this.handleToggleModal();
+    }
+  };
+  handleToggleModalByEsc = evt => {
+    let { code } = evt;
+    if (code === 'Escape') {
+      this.handleToggleModal();
+      window.removeEventListener('keydown', this.handleToggleModalByEsc);
+    }
+  };
   render() {
-    const { currentImgUrl, loadedData } = this.state;
+    const { currentImgUrl, loadedData, isLoader, isLoadMoreBtn, isOpenModal } =
+      this.state;
     return (
       <div className={css.App}>
         <Searchbar
@@ -133,15 +140,16 @@ export class App extends Component {
             onToggleModal={this.handleToggleModal}
           />
         )}
-
-        {this.state.isLoader && <Loader />}
-        {this.state.isLoadMoreBtn && (
+        {isLoader && <Loader />}
+        {isLoadMoreBtn && (
           <Button onLoadMoreBtnClick={this.onLoadMoreBtnClick} />
         )}
-        {this.state.isOpenModal && (
+        {isOpenModal && (
           <Modal
             currentImgUrl={currentImgUrl}
-            onToggleModal={this.handleToggleModal}
+            onToggleModalByBtn={this.handleToggleModal}
+            onToggleModalByOverlay={this.handleToggleModalOverlay}
+            onCloseModalByEsc={this.handleToggleModalByEsc}
           />
         )}
       </div>

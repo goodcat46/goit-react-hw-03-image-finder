@@ -2,16 +2,19 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import css from './modal.module.css';
 
-const Modal = ({ currentImgUrl, onToggleModal }) => {
+const Modal = ({ currentImgUrl, onToggleModalByBtn, onToggleModalByOverlay, onCloseModalByEsc }) => {
+  window.addEventListener('keydown',onCloseModalByEsc)
   return (
-    <div className={css.Overlay}>
+    <div className={css.Overlay} onClick={(evt)=>{
+      onToggleModalByOverlay(evt)
+    }}>
       <div className={css.Modal}>
         <img src={currentImgUrl} alt="img_" />
       </div>
       <button
         className={css.closeModal}
         onClick={() => {
-          onToggleModal();
+          onToggleModalByBtn();
         }}
       >
         Close
@@ -22,7 +25,8 @@ const Modal = ({ currentImgUrl, onToggleModal }) => {
 
 Modal.propTypes = {
   currentImgUrl: PropTypes.string,
-  onToggleModal: PropTypes.func,
+  onToggleModalByBtn: PropTypes.func,
+  onToggleModalByOverlay: PropTypes.func,
 };
 
 export default Modal;
